@@ -54,13 +54,32 @@ OPENWEATHER_API_KEY=あなたのAPIキー
 3. ログイン後、"API keys"タブからAPIキーを取得
 4. 取得したキーを`.env`ファイルに貼り付け
 
+**⚠️ 重要**: APIキーは発行直後は無効です。**有効化まで2〜3時間**（最大24時間）かかります。
+- 有効化されるまでは `401 Unauthorized` エラーが出ます
+- その間は波データ（Open-Meteo）のみ取得できます
+- 時間を置いてから再度試してください
+
 ### 4. アプリの起動
 
 ```bash
+# 方法1: streamlitコマンドが使える場合
 streamlit run surf_advisor.py
+
+# 方法2: streamlitコマンドが見つからない場合
+python3 -m streamlit run surf_advisor.py
 ```
 
 ブラウザが自動的に開き、`http://localhost:8501`でアプリが表示されます。
+
+#### ポート8501が既に使用中の場合
+
+```bash
+# 既存のプロセスを終了
+lsof -ti:8501 | xargs kill -9
+
+# アプリを再起動
+python3 -m streamlit run surf_advisor.py
+```
 
 ## 使い方
 
@@ -131,16 +150,41 @@ python-day4/
 
 ## トラブルシューティング
 
-### APIエラーが出る場合
+### `401 Unauthorized` エラーが出る場合
+
+OpenWeatherMap APIキーがまだ有効化されていません。
+- APIキー発行後、**2〜3時間待つ**（最大24時間）
+- [OpenWeatherMapダッシュボード](https://home.openweathermap.org/api_keys)でキーの状態を確認
+- 波データ（Open-Meteo）は問題なく取得できます
+
+### `streamlit: command not found` エラーが出る場合
+
+```bash
+# Pythonモジュールとして実行
+python3 -m streamlit run surf_advisor.py
+```
+
+### ポート8501が使用中の場合
+
+```bash
+lsof -ti:8501 | xargs kill -9
+python3 -m streamlit run surf_advisor.py
+```
+
+### その他のAPIエラー
 
 1. `.env`ファイルが正しく作成されているか確認
-2. OpenWeatherMap APIキーが有効か確認（発行直後は数時間かかることがあります）
-3. インターネット接続を確認
+2. インターネット接続を確認
+3. Open-Meteo APIは登録不要ですが、稀にダウンタイムがあります
 
-### データが表示されない場合
+### VSCodeを閉じた後、再開する方法
 
-- Open-Meteo APIは登録不要ですが、稀にダウンタイムがあります
-- 少し時間を置いてから再試行してください
+```bash
+cd /Users/taguchi/python/python-day4
+python3 -m streamlit run surf_advisor.py
+```
+
+または、VSCodeで `/Users/taguchi/python/python-day4` フォルダを開く
 
 ## ライセンス
 
