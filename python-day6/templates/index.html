@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Journal - 日報入力</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Growth Journal</h1>
+            <p class="subtitle">成長を可視化する日報システム</p>
+        </header>
+
+        <div class="progress-section">
+            <div class="progress-card">
+                <span class="progress-label">現在の記録</span>
+                <span class="progress-count">{{ journal_count }} / {{ trigger_count }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (journal_count / trigger_count * 100) }}%"></div>
+            </div>
+            <p class="progress-message">
+                {% if journal_count == trigger_count - 1 %}
+                    🎉 次の日報でリフレクションが生成されます！
+                {% else %}
+                    あと {{ trigger_count - journal_count }} 日報でリフレクション生成
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="form-section">
+            <form id="journalForm">
+                <div class="form-group">
+                    <label for="date">日付</label>
+                    <input type="date" id="date" name="date" value="{{ today }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">今日の活動</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        rows="12"
+                        placeholder="今日やったこと、学んだこと、感じたことを自由に書いてください...&#10;&#10;例:&#10;- Pythonでデータ分析の基礎を学習&#10;- pandasのgroupby関数の使い方を理解&#10;- 可視化にmatplotlibを使ってグラフ作成&#10;- エラーハンドリングで少し詰まったが解決できた"
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="submit-button" id="submitButton">
+                    <span class="button-text">日報を送信</span>
+                    <span class="button-loading" style="display: none;">処理中...</span>
+                </button>
+            </form>
+        </div>
+
+        <div id="result" class="result-section" style="display: none;"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('journalForm');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = submitButton.querySelector('.button-text');
+        const buttonLoading = submitButton.querySelector('.button-loading');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // ボタンを無効化
+            submitButton.disabled = true;
+            buttonText.style.display = 'none';
+            buttonLoading.style.display = 'inline';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result-section success';
+
+                    let html = `
+                        <h2>✅ 日報を送信しました！</h2>
+                        <div class="result-content">
+                            <div class="result-item">
+                                <h3>📊 AI生成サマリー</h3>
+                                <p>${data.summary}</p>
+                            </div>
+                    `;
+
+                    if (data.growth_points && data.growth_points.length > 0) {
+                        html += `
+                            <div class="result-item">
+                                <h3>🌟 成長ポイント</h3>
+                                <ul>
+                                    ${data.growth_points.map(point => `<li>${point}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+
+                    if (data.skills && data.skills.length > 0) {
+                        html += `
+                            <div class="result-item">
+                                <h3>🏷️ 検出されたスキル</h3>
+                                <div class="skills-tags">
+                                    ${data.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (data.should_reflect) {
+                        html += `
+                            <div class="reflection-notice">
+                                <h3>🎉 リフレクション生成の時間です！</h3>
+                                <p>${data.journal_count}日分の日報が貯まりました。成長を振り返りましょう。</p>
+                                <a href="${data.reflection_url}" class="reflection-button">リフレクションを見る</a>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                            <p class="journal-count">記録: ${data.journal_count}日目</p>
+                        </div>
+                    `;
+
+                    resultDiv.innerHTML = html;
+
+                    // フォームをリセット
+                    form.reset();
+                    document.getElementById('date').value = '{{ today }}';
+
+                    // ページをリロード（カウントを更新）
+                    if (data.should_reflect) {
+                        setTimeout(() => {
+                            window.location.href = data.reflection_url;
+                        }, 2000);
+                    } else {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    }
+                } else {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result-section error';
+                    resultDiv.innerHTML = `
+                        <h2>❌ エラーが発生しました</h2>
+                        <p>${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result-section error';
+                resultDiv.innerHTML = `
+                    <h2>❌ エラーが発生しました</h2>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                // ボタンを再度有効化
+                submitButton.disabled = false;
+                buttonText.style.display = 'inline';
+                buttonLoading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

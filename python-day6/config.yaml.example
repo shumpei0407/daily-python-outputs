@@ -1,0 +1,19 @@
+# Growth Journal 設定ファイル
+
+notion:
+  # Notion APIキー（https://www.notion.so/my-integrations で取得）
+  api_key: "secret_XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+  # Notionデータベースのドキュメント内のDB ID
+  database_id: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+ollama:
+  # 使用するLLMモデル（llama2, llama3, mistral など）
+  model: "llama2"
+
+  # OllamaのベースURL（通常は変更不要）
+  base_url: "http://localhost:11434"
+
+reflection:
+  # リフレクション生成のトリガー回数（何日報ごとに生成するか）
+  trigger_count: 5

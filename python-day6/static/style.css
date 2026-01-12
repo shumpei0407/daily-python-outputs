@@ -1,0 +1,442 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1em;
+}
+
+.progress-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.progress-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.progress-label {
+    font-size: 1.1em;
+    color: #555;
+}
+
+.progress-count {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.progress-bar {
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.progress-message {
+    text-align: center;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 200px;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.result-section {
+    padding: 25px;
+    border-radius: 15px;
+    margin-top: 30px;
+}
+
+.result-section.success {
+    background: #d4edda;
+    border: 2px solid #c3e6cb;
+}
+
+.result-section.error {
+    background: #f8d7da;
+    border: 2px solid #f5c6cb;
+}
+
+.result-section h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.result-content {
+    color: #333;
+}
+
+.result-item {
+    margin-bottom: 25px;
+}
+
+.result-item h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.result-item p {
+    line-height: 1.6;
+    color: #333;
+}
+
+.result-item ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.result-item ul li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+    color: #333;
+}
+
+.result-item ul li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    display: inline-block;
+    padding: 6px 15px;
+    background: #667eea;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.journal-count {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.reflection-notice {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 20px;
+    color: white;
+}
+
+.reflection-notice h3 {
+    margin-bottom: 10px;
+    font-size: 1.5em;
+}
+
+.reflection-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 30px;
+    background: white;
+    color: #f5576c;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.reflection-button:hover {
+    transform: scale(1.05);
+}
+
+/* Reflection Page Styles */
+
+.reflection-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.reflection-badge {
+    display: inline-block;
+    padding: 10px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.reflection-section {
+    margin-bottom: 30px;
+}
+
+.reflection-card {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #e9ecef;
+}
+
+.reflection-card.highlight {
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
+    border-color: #ffb366;
+}
+
+.reflection-card h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.reflection-summary {
+    font-size: 1.1em;
+    line-height: 1.8;
+    color: #555;
+}
+
+.learning-list,
+.focus-list {
+    list-style: none;
+    padding: 0;
+}
+
+.learning-list li,
+.focus-list li {
+    padding: 12px 0;
+    padding-left: 30px;
+    position: relative;
+    color: #333;
+    line-height: 1.6;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.learning-list li:last-child,
+.focus-list li:last-child {
+    border-bottom: none;
+}
+
+.learning-list li::before {
+    content: "📚";
+    position: absolute;
+    left: 0;
+}
+
+.focus-list li::before {
+    content: "🎯";
+    position: absolute;
+    left: 0;
+}
+
+.skill-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.skill-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.skill-name {
+    min-width: 150px;
+    font-weight: 600;
+    color: #555;
+}
+
+.skill-bar-container {
+    flex: 1;
+    height: 20px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.skill-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.skill-count {
+    min-width: 60px;
+    text-align: right;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.empty-message {
+    color: #999;
+    font-style: italic;
+}
+
+.action-buttons {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.primary-button {
+    display: inline-block;
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.motivational-message {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+    border-radius: 15px;
+}
+
+.motivational-message p {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #2d3436;
+}
+
+.error-message {
+    padding: 30px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #721c24;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    header h1 {
+        font-size: 2em;
+    }
+
+    .skill-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .skill-name {
+        min-width: auto;
+    }
+
+    .skill-bar-container {
+        width: 100%;
+    }
+}

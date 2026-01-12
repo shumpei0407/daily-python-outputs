@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Journal - リフレクション</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Growth Reflection</h1>
+            <p class="subtitle">{{ reflection.period_start }} 〜 {{ reflection.period_end }}</p>
+        </header>
+
+        <div class="reflection-header">
+            <div class="reflection-badge">
+                {{ reflection.journal_count }}日分の振り返り
+            </div>
+        </div>
+
+        <div class="reflection-section">
+            <div class="reflection-card">
+                <h2>🌟 成長サマリー</h2>
+                <p class="reflection-summary">{{ reflection.growth_summary }}</p>
+            </div>
+
+            <div class="reflection-card">
+                <h2>📚 主な学び</h2>
+                {% if reflection.key_learnings %}
+                    <ul class="learning-list">
+                        {% for learning in reflection.key_learnings %}
+                            <li>{{ learning }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty-message">学びが記録されていません</p>
+                {% endif %}
+            </div>
+
+            <div class="reflection-card">
+                <h2>📈 スキル進捗</h2>
+                {% if reflection.skill_progress %}
+                    <div class="skill-progress">
+                        {% for skill, count in reflection.skill_progress.items() %}
+                            <div class="skill-item">
+                                <span class="skill-name">{{ skill }}</span>
+                                <div class="skill-bar-container">
+                                    <div class="skill-bar" style="width: {{ (count / reflection.journal_count * 100) }}%"></div>
+                                </div>
+                                <span class="skill-count">{{ count }}回</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-message">スキルが記録されていません</p>
+                {% endif %}
+            </div>
+
+            <div class="reflection-card highlight">
+                <h2>🎯 次に意識すること</h2>
+                {% if reflection.next_focus %}
+                    <ul class="focus-list">
+                        {% for focus in reflection.next_focus %}
+                            <li>{{ focus }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty-message">推奨事項がありません</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/" class="primary-button">新しい日報を書く</a>
+        </div>
+
+        <div class="motivational-message">
+            <p>🎉 素晴らしい成長です！次の5日間も頑張りましょう！</p>
+        </div>
+    </div>
+</body>
+</html>

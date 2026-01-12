@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Journal - エラー</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>❌ エラー</h1>
+        </header>
+
+        <div class="error-message">
+            <p>{{ message }}</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/" class="primary-button">トップページに戻る</a>
+        </div>
+    </div>
+</body>
+</html>
