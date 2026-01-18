@@ -1,0 +1,19 @@
+{
+  "sloth": {
+    "name": "なまけもの",
+    "evolution_stage": 0,
+    "consecutive_days": 0,
+    "total_tasks_completed": 0,
+    "created_at": "2026-01-18T23:58:31.610571",
+    "is_alive": true
+  },
+  "task": {
+    "content": null,
+    "created_at": null,
+    "completed": false,
+    "completed_at": null
+  },
+  "history": [],
+  "last_task_date": null,
+  "last_check_date": "2026-01-18"
+}
