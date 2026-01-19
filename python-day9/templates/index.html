@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLOTH TASK - 8bit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">SLOTH TASK</h1>
+        </header>
+
+        <!-- ナマケモノ表示エリア -->
+        <div class="sloth-display">
+            <div class="sloth-sprite" id="sloth-sprite">
+                {{ initial_sprite | safe }}
+            </div>
+            <div class="sloth-name" id="sloth-name">{{ status.stage_info.name }}</div>
+            <div class="sloth-stage" id="sloth-stage">{{ status.stage_info.description }}</div>
+        </div>
+
+        <!-- ステータスパネル -->
+        <div class="status-panel">
+            <div class="status-row">
+                <span class="status-label">STREAK:</span>
+                <span class="status-value" id="consecutive-days">{{ status.sloth.consecutive_days }}DAY</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">TOTAL:</span>
+                <span class="status-value" id="total-tasks">{{ status.sloth.total_tasks_completed }}</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">LIFE:</span>
+                <span class="status-value {% if status.days_until_death <= 1 %}danger{% endif %}" id="days-until-death">
+                    {{ status.days_until_death }}DAY
+                </span>
+            </div>
+            {% if status.next_stage %}
+            <div class="status-row">
+                <span class="status-label">NEXT:</span>
+                <span class="status-value" id="days-to-next">{{ status.days_to_next }}DAY</span>
+            </div>
+            <div class="progress-bar">
+                {% set progress = ((status.sloth.consecutive_days - status.stage_info.required_days) / (status.next_stage.required_days - status.stage_info.required_days) * 100) | int %}
+                <div class="progress-fill" style="width: {{ progress }}%"></div>
+            </div>
+            {% else %}
+            <div class="status-row">
+                <span class="status-label">STATUS:</span>
+                <span class="status-value">MAX LV!</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- メッセージボックス -->
+        <div class="message-box" id="message-box">
+            ...zzZ
+        </div>
+
+        <!-- タスクパネル -->
+        <div class="task-panel">
+            <div class="task-title">TODAY'S QUEST</div>
+
+            <div id="task-input-area" {% if status.task.content %}style="display:none"{% endif %}>
+                <input type="text" class="task-input" id="task-input" placeholder="ENTER TASK...">
+                <button class="btn btn-primary" id="set-task-btn">SET</button>
+            </div>
+
+            <div id="task-display-area" {% if not status.task.content %}style="display:none"{% endif %}>
+                <div class="task-display">
+                    <span class="task-content {% if status.task.completed %}task-completed{% endif %}" id="task-content">
+                        {{ status.task.content or '' }}
+                    </span>
+                </div>
+                {% if not status.task.completed %}
+                <button class="btn btn-success" id="complete-task-btn">COMPLETE!</button>
+                {% else %}
+                <button class="btn btn-primary" disabled>DONE TODAY!</button>
+                {% endif %}
+                <button class="btn btn-warning" id="change-task-btn" style="margin-top: 8px;">CHANGE</button>
+            </div>
+        </div>
+
+        <!-- リセットボタン -->
+        <button class="btn btn-danger" id="reset-btn" style="margin-top: 8px;">RESET</button>
+
+        <footer class="footer">
+            FEED YOUR SLOTH DAILY!<br>
+            3 DAYS = GAME OVER
+        </footer>
+    </div>
+
+    <!-- 死亡時オーバーレイ -->
+    <div class="dead-overlay" id="dead-overlay" {% if status.status != 'dead' and status.status != 'died' %}style="display:none"{% endif %}>
+        <div class="dead-message">
+            <h2>GAME OVER</h2>
+            <p>YOUR SLOTH HAS<br>GONE TO HEAVEN...</p>
+            <p>STREAK: <span id="final-days">{{ status.sloth.consecutive_days }}</span> DAYS</p>
+            <button class="btn btn-primary" id="restart-btn">CONTINUE?</button>
+        </div>
+    </div>
+
+    <script>
+        // 状態管理
+        let currentStatus = {{ status | tojson }};
+
+        // DOM要素
+        const slothSprite = document.getElementById('sloth-sprite');
+        const slothName = document.getElementById('sloth-name');
+        const slothStage = document.getElementById('sloth-stage');
+        const consecutiveDays = document.getElementById('consecutive-days');
+        const totalTasks = document.getElementById('total-tasks');
+        const daysUntilDeath = document.getElementById('days-until-death');
+        const daysToNext = document.getElementById('days-to-next');
+        const messageBox = document.getElementById('message-box');
+        const taskInput = document.getElementById('task-input');
+        const taskContent = document.getElementById('task-content');
+        const taskInputArea = document.getElementById('task-input-area');
+        const taskDisplayArea = document.getElementById('task-display-area');
+        const deadOverlay = document.getElementById('dead-overlay');
+
+        // 8ビット風メッセージ
+        const idleMessages = [
+            '...zzZ',
+            '*YAWN*',
+            '...',
+            '*STRETCH*',
+            'HUNGRY...',
+            '*BLINK*',
+            'DO TASK PLZ',
+            '*WAITING*'
+        ];
+
+        // スプライト読み込み
+        async function loadSprite(stageId, isDead = false) {
+            try {
+                const url = isDead ? '/api/sprite/dead' : `/api/sprite/${stageId}`;
+                const response = await fetch(url);
+                const svg = await response.text();
+                slothSprite.innerHTML = svg;
+                if (isDead) {
+                    slothSprite.classList.add('dead');
+                } else {
+                    slothSprite.classList.remove('dead');
+                }
+            } catch (error) {
+                console.error('SPRITE ERROR:', error);
+            }
+        }
+
+        // UI更新
+        function updateUI(status) {
+            currentStatus = status;
+
+            // ナマケモノ情報
+            slothName.textContent = status.stage_info.name;
+            slothStage.textContent = status.stage_info.description;
+            consecutiveDays.textContent = `${status.sloth.consecutive_days}DAY`;
+            totalTasks.textContent = status.sloth.total_tasks_completed;
+            daysUntilDeath.textContent = `${status.days_until_death}DAY`;
+
+            // 危険表示
+            if (status.days_until_death <= 1) {
+                daysUntilDeath.classList.add('danger');
+            } else {
+                daysUntilDeath.classList.remove('danger');
+            }
+
+            // 次の進化まで
+            if (status.next_stage && daysToNext) {
+                daysToNext.textContent = `${status.days_to_next}DAY`;
+            }
+
+            // タスク表示
+            if (status.task.content) {
+                taskInputArea.style.display = 'none';
+                taskDisplayArea.style.display = 'block';
+                taskContent.textContent = status.task.content;
+
+                if (status.task.completed) {
+                    taskContent.classList.add('task-completed');
+                    document.getElementById('complete-task-btn').style.display = 'none';
+                } else {
+                    taskContent.classList.remove('task-completed');
+                    document.getElementById('complete-task-btn').style.display = 'block';
+                }
+            } else {
+                taskInputArea.style.display = 'block';
+                taskDisplayArea.style.display = 'none';
+            }
+
+            // 死亡チェック
+            if (status.status === 'dead' || status.status === 'died') {
+                deadOverlay.style.display = 'flex';
+                document.getElementById('final-days').textContent = status.sloth.consecutive_days;
+                loadSprite(0, true);
+            } else {
+                deadOverlay.style.display = 'none';
+                loadSprite(status.sloth.evolution_stage);
+            }
+        }
+
+        // メッセージ表示
+        function showMessage(message, type = '') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box';
+            if (type) {
+                messageBox.classList.add(type);
+            }
+        }
+
+        // ランダムメッセージ
+        function showRandomIdleMessage() {
+            const msg = idleMessages[Math.floor(Math.random() * idleMessages.length)];
+            showMessage(msg);
+        }
+
+        // 進化アニメーション
+        function playEvolutionAnimation() {
+            slothSprite.classList.add('evolution-animation');
+            showMessage('*LEVEL UP!*', 'success');
+            setTimeout(() => {
+                slothSprite.classList.remove('evolution-animation');
+            }, 1000);
+        }
+
+        // タスク設定
+        document.getElementById('set-task-btn').addEventListener('click', async () => {
+            const content = taskInput.value.trim();
+            if (!content) {
+                showMessage('ENTER TASK!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('QUEST SET!', 'success');
+                    updateUI(data.status);
+                    taskInput.value = '';
+                } else {
+                    showMessage('ERROR!', 'error');
+                }
+            } catch (error) {
+                showMessage('ERROR!', 'error');
+            }
+        });
+
+        // タスク完了
+        document.getElementById('complete-task-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/task/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('NICE WORK!', 'success');
+                    if (data.evolved) {
+                        playEvolutionAnimation();
+                    }
+                    updateUI(data.status);
+                } else {
+                    showMessage('ERROR!', 'error');
+                }
+            } catch (error) {
+                showMessage('ERROR!', 'error');
+            }
+        });
+
+        // タスク変更
+        document.getElementById('change-task-btn').addEventListener('click', () => {
+            taskInputArea.style.display = 'block';
+            taskDisplayArea.style.display = 'none';
+            taskInput.value = currentStatus.task.content || '';
+            taskInput.focus();
+        });
+
+        // リセット
+        document.getElementById('reset-btn').addEventListener('click', async () => {
+            if (!confirm('RESET GAME?\nYOUR SLOTH WILL BE GONE!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('NEW GAME!', 'success');
+                    updateUI(data.status);
+                }
+            } catch (error) {
+                showMessage('ERROR!', 'error');
+            }
+        });
+
+        // 再スタート（死亡後）
+        document.getElementById('restart-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('NEW SLOTH!', 'success');
+                    updateUI(data.status);
+                }
+            } catch (error) {
+                showMessage('ERROR!', 'error');
+            }
+        });
+
+        // Enterキーでタスク設定
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('set-task-btn').click();
+            }
+        });
+
+        // 初期読み込み
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentStatus.status === 'dead' || currentStatus.status === 'died') {
+                loadSprite(0, true);
+            } else {
+                loadSprite(currentStatus.sloth.evolution_stage);
+            }
+        });
+
+        // 定期的にステータス更新（1分ごと）
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                console.error('STATUS ERROR:', error);
+            }
+        }, 60000);
+
+        // ランダムメッセージ（30秒ごと）
+        setInterval(() => {
+            if (!currentStatus.task.completed && currentStatus.task.content) {
+                showRandomIdleMessage();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
