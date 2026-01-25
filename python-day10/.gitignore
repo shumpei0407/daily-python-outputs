@@ -1,0 +1,30 @@
+# 環境変数
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# 一時ファイル
+temp/*.mp3
+temp/*.m4a
+temp/*.wav
+temp/*.webm
+!temp/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

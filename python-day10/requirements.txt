@@ -1,0 +1,16 @@
+# Web Framework
+streamlit>=1.28.0
+
+# YouTube処理
+youtube-transcript-api>=0.6.1
+yt-dlp>=2024.1.0
+requests>=2.31.0
+
+# ローカルLLM（要約用）- 無料
+ollama>=0.3.0
+
+# ローカルWhisper（音声認識用）- 無料
+faster-whisper>=1.0.0
+
+# 環境変数
+python-dotenv>=1.0.0
